@@ -353,7 +353,13 @@
   /* ---- Print ---- */
   @media print{
     @page{ size:letter; margin:14mm; }
+    html, body{ margin:0; padding:0; }
     body *{ visibility:hidden; }
+    .app{ max-width:none; margin:0; padding:0; }
+    .tabs, #tab-form{ display:none !important; }
+    .layout{ display:block; }
+    #tab-preview, .preview-wrap{ display:block !important; position:static; }
+    .sheet-frame{ padding:0; border:0; background:transparent; display:block; }
     .sheet, .sheet *{ visibility:visible; }
     .sheet{
       position:absolute;
