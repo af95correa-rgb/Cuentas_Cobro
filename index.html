@@ -300,12 +300,28 @@
   .sheet table.amounts{
     width:100%;
     border-collapse:collapse;
-   font-family: Arial, sans-serif;
+    font-family: Arial, sans-serif;
     font-size:14px;
     margin-bottom:4px;
+    display:grid;
+    gap:4px;
   }
-  .sheet table.amounts td{padding:6px 0; border-bottom:1px dotted var(--paper-line);}
-  .sheet table.amounts td.amt{text-align:right; font-family:'IBM Plex Mono', monospace;}
+  .sheet table.amounts tr{
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) auto;
+    align-items:center;
+    gap:12px;
+  }
+  .sheet table.amounts td{
+    padding:6px 0;
+    border-bottom:1px dotted var(--paper-line);
+    min-width:0;
+  }
+  .sheet table.amounts td.amt{
+    text-align:right;
+    font-family:'IBM Plex Mono', monospace;
+    white-space:nowrap;
+  }
   .sheet table.amounts tr.total td{
     border-bottom:none;
     border-top:2px solid var(--ink);
