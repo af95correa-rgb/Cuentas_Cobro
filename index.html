@@ -586,6 +586,8 @@ function loadFixed(){
     const raw = localStorage.getItem(STORAGE_KEY);
     if(raw){ data = {...data, ...JSON.parse(raw)}; }
   }catch(e){ console.warn('No se pudo leer datos guardados', e); }
+  if(!data.banco) data.banco = defaults.banco;
+  if(!data.numCuenta) data.numCuenta = defaults.numCuenta;
   fixedFieldIds.forEach(id => { document.getElementById(id).value = data[id] ?? ''; });
 }
 
