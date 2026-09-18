@@ -412,13 +412,45 @@
         <fieldset>
           <legend>SERVICIO PRESTADO</legend>
           <div class="field">
-            <label for="concepto">Concepto</label>
-            <textarea id="concepto">Servicio de instalación y configuración de Microsoft Office en doce (12) equipos de cómputo, de acuerdo con el servicio solicitado y las condiciones acordadas con el cliente.</textarea>
+            <label for="servicioDescripcion">Detalle del servicio principal</label>
+            <textarea id="servicioDescripcion">Instalación y configuración de Microsoft Office</textarea>
           </div>
+          <div class="row2">
+            <div class="field">
+              <label for="valorUnitarioServicio">Valor unitario del servicio principal (COP)</label>
+              <input type="number" id="valorUnitarioServicio" min="0" step="1000" placeholder="0" value="30000">
+            </div>
+            <div class="field">
+              <label for="cantidadServicio">Cantidad</label>
+              <input type="number" id="cantidadServicio" min="1" step="1" value="12">
+            </div>
+          </div>
+
           <div class="field">
-            <label for="valorServicio">Valor del servicio (COP)</label>
-            <input type="number" id="valorServicio" min="0" step="1000" placeholder="0">
+            <label>¿Hay servicio adicional?</label>
+            <div class="radio-row">
+              <label><input type="radio" name="servicioAdicional" value="si"> Sí</label>
+              <label><input type="radio" name="servicioAdicional" value="no" checked> No</label>
+            </div>
           </div>
+
+          <div id="servicioAdicionalWrap" style="display:none;">
+            <div class="field">
+              <label for="servicioDescripcionAdicional">Detalle del servicio adicional</label>
+              <textarea id="servicioDescripcionAdicional">Mantenimiento preventivo y revisión de equipos</textarea>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label for="valorUnitarioServicioAdicional">Valor unitario del servicio adicional (COP)</label>
+                <input type="number" id="valorUnitarioServicioAdicional" min="0" step="1000" placeholder="0" value="25000">
+              </div>
+              <div class="field">
+                <label for="cantidadServicioAdicional">Cantidad adicional</label>
+                <input type="number" id="cantidadServicioAdicional" min="1" step="1" value="1">
+              </div>
+            </div>
+          </div>
+
           <div class="field">
             <label>¿Incluye domicilio?</label>
             <div class="radio-row">
@@ -513,12 +545,16 @@
             <div class="concepto-text" id="prevConcepto">—</div>
 
             <table class="amounts">
-              <tr>
-                <td>Valor del servicio</td>
+              <tr id="rowServicioPrincipal">
+                <td id="labelServicioPrincipal">Servicio principal</td>
                 <td class="amt" id="prevValorServicio">$ 0</td>
               </tr>
+              <tr id="rowServicioAdicional" style="display:none;">
+                <td id="labelServicioAdicional">Servicio adicional</td>
+                <td class="amt" id="prevValorServicioAdicional">$ 0</td>
+              </tr>
               <tr id="rowDomicilio" style="display:none;">
-                <td>Domicilio</td>
+                <td>Servicio a domicilio</td>
                 <td class="amt" id="prevValorDomicilio">$ 0</td>
               </tr>
               <tr class="total">
@@ -630,7 +666,7 @@ function guardarNumero(){
 }
 
 function actualizarVista(){
-  const g = id => document.getElementById(id).value;
+  const g = id => document.getElementById(id)?.value ?? '';
 
   document.getElementById('prevNumero').textContent = 'No. ' + (g('numero') || '—');
   document.getElementById('prevMiNombre').textContent = g('miNombre') || '—';
@@ -642,14 +678,37 @@ function actualizarVista(){
   document.getElementById('prevClienteNombre').textContent = g('clienteNombre') || 'Nombre del cliente';
   document.getElementById('prevClienteNit').textContent = g('clienteNit') || '—';
 
-  document.getElementById('prevConcepto').textContent = g('concepto') || '—';
+  const descripcionServicio = g('servicioDescripcion') || 'Servicio principal';
+  const valorUnitarioServicio = parseFloat(g('valorUnitarioServicio')) || 0;
+  const cantidadServicio = parseInt(g('cantidadServicio'), 10) || 0;
+  const valorServicio = valorUnitarioServicio * cantidadServicio;
 
-  const valorServicio = parseFloat(g('valorServicio')) || 0;
+  const hayServicioAdicional = document.querySelector('input[name=servicioAdicional]:checked').value === 'si';
+  const descripcionServicioAdicional = g('servicioDescripcionAdicional') || 'Servicio adicional';
+  const valorUnitarioServicioAdicional = parseFloat(g('valorUnitarioServicioAdicional')) || 0;
+  const cantidadServicioAdicional = parseInt(g('cantidadServicioAdicional'), 10) || 0;
+  const valorServicioAdicional = hayServicioAdicional ? (valorUnitarioServicioAdicional * cantidadServicioAdicional) : 0;
+
+  const conceptoServicio = [
+    descripcionServicio,
+    `Valor unitario: ${fmtMoney(valorUnitarioServicio)}`,
+    `Cantidad: ${cantidadServicio}`,
+    `Total del servicio: ${fmtMoney(valorServicio)}`
+  ];
+
+  if (hayServicioAdicional) {
+    conceptoServicio.push('', descripcionServicioAdicional, `Valor unitario: ${fmtMoney(valorUnitarioServicioAdicional)}`, `Cantidad: ${cantidadServicioAdicional}`, `Total del servicio adicional: ${fmtMoney(valorServicioAdicional)}`);
+  }
+
+  document.getElementById('prevConcepto').textContent = conceptoServicio.join('\n');
+
   const incluyeDomicilio = document.querySelector('input[name=domicilio]:checked').value === 'si';
   const valorDomicilio = incluyeDomicilio ? (parseFloat(g('valorDomicilio')) || 0) : 0;
-  const total = valorServicio + valorDomicilio;
+  const total = valorServicio + valorServicioAdicional + valorDomicilio;
 
   document.getElementById('prevValorServicio').textContent = fmtMoney(valorServicio);
+  document.getElementById('rowServicioAdicional').style.display = hayServicioAdicional ? '' : 'none';
+  document.getElementById('prevValorServicioAdicional').textContent = fmtMoney(valorServicioAdicional);
   document.getElementById('rowDomicilio').style.display = incluyeDomicilio ? '' : 'none';
   document.getElementById('prevValorDomicilio').textContent = fmtMoney(valorDomicilio);
   document.getElementById('prevTotal').textContent = fmtMoney(total);
@@ -671,8 +730,14 @@ function nuevaCuenta(){
   loadNumero();
   document.getElementById('clienteNombre').value = '';
   document.getElementById('clienteNit').value = '';
-  document.getElementById('concepto').value = '';
-  document.getElementById('valorServicio').value = '';
+  document.getElementById('servicioDescripcion').value = 'Instalación y configuración de Microsoft Office';
+  document.getElementById('valorUnitarioServicio').value = '30000';
+  document.getElementById('cantidadServicio').value = '12';
+  document.getElementById('servicioDescripcionAdicional').value = 'Mantenimiento preventivo y revisión de equipos';
+  document.getElementById('valorUnitarioServicioAdicional').value = '25000';
+  document.getElementById('cantidadServicioAdicional').value = '1';
+  document.querySelector('input[name=servicioAdicional][value=no]').checked = true;
+  document.getElementById('servicioAdicionalWrap').style.display = 'none';
   document.getElementById('valorDomicilio').value = '';
   document.querySelector('input[name=domicilio][value=no]').checked = true;
   document.getElementById('valorDomicilioWrap').style.display = 'none';
@@ -702,6 +767,9 @@ document.addEventListener('input', (e)=>{
 document.addEventListener('change', (e)=>{
   if(e.target.name === 'domicilio'){
     document.getElementById('valorDomicilioWrap').style.display = e.target.value === 'si' ? '' : 'none';
+  }
+  if(e.target.name === 'servicioAdicional'){
+    document.getElementById('servicioAdicionalWrap').style.display = e.target.value === 'si' ? '' : 'none';
   }
   actualizarVista();
 });
